@@ -16,7 +16,7 @@ class Wraith::Wraith
       @config = config
     else
       filepath = determine_config_path config
-      @config = YAML.load_file filepath
+      @config = YAML.load(ERB.new(File.read(filepath)).result)
       if !@config
         fail InvalidYamlError, "could not parse \"#{config}\" as YAML"
       end
