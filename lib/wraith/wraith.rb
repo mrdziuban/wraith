@@ -99,6 +99,10 @@ class Wraith::Wraith
     end
   end
 
+  def before_start
+    @config["before_start"] ? convert_to_absolute(@config["before_start"]) : false
+  end
+
   def before_capture
     @config["before_capture"] ? convert_to_absolute(@config["before_capture"]) : false
   end
