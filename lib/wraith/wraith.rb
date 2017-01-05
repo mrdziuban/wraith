@@ -99,6 +99,10 @@ class Wraith::Wraith
     end
   end
 
+  def binary_path
+    @config["binary_path"] || engine
+  end
+
   def before_start
     @config["before_start"] ? convert_to_absolute(@config["before_start"]) : false
   end
