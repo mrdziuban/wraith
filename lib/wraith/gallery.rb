@@ -192,8 +192,9 @@ class Wraith::GalleryGenerator
   end
 
   def prompt_user_to_open_gallery(dest)
+    require 'pathname'
     logger.info "\nView the gallery in your browser:"
-    logger.info "\t file://" + Dir.pwd + "/" + dest
+    logger.info "\t file://#{Pathname.new(dest).absolute? ? dest : "#{Dir.pwd}/#{dest}"}"
   end
 
   class ErbBinding < OpenStruct
