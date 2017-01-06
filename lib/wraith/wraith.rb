@@ -16,7 +16,7 @@ class Wraith::Wraith
       @config = config
     else
       filepath = determine_config_path config
-      @config = YAML.load_file filepath
+      @config = YAML.load(ERB.new(File.read(filepath)).result)
       if !@config
         fail InvalidYamlError, "could not parse \"#{config}\" as YAML"
       end
@@ -97,6 +97,14 @@ class Wraith::Wraith
     else
       logger.error "Wraith does not recognise the browser engine '#{engine}'"
     end
+  end
+
+  def binary_path
+    @config["binary_path"] || engine
+  end
+
+  def before_start
+    @config["before_start"] ? convert_to_absolute(@config["before_start"]) : false
   end
 
   def before_capture

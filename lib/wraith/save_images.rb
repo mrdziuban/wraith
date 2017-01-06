@@ -51,8 +51,8 @@ class Wraith::SaveImages
     compare_file_name = meta.file_names(width, label, meta.compare_label)
 
     jobs = []
-    jobs << [label, settings.path, prepare_widths_for_cli(width), settings.base_url,    base_file_name,    settings.selector, wraith.before_capture, settings.before_capture]
-    jobs << [label, settings.path, prepare_widths_for_cli(width), settings.compare_url, compare_file_name, settings.selector, wraith.before_capture, settings.before_capture] unless settings.compare_url.nil?
+    jobs << [label, settings.path, prepare_widths_for_cli(width), settings.base_url,    base_file_name,    settings.selector, wraith.before_start, wraith.before_capture, settings.before_capture]
+    jobs << [label, settings.path, prepare_widths_for_cli(width), settings.compare_url, compare_file_name, settings.selector, wraith.before_start, wraith.before_capture, settings.before_capture] unless settings.compare_url.nil?
 
     jobs
   end
@@ -73,9 +73,9 @@ class Wraith::SaveImages
   end
 
   def parallel_task(jobs)
-    Parallel.each(jobs, :in_threads => 8) do |_label, _path, width, url, filename, selector, global_before_capture, path_before_capture|
+    Parallel.each(jobs, :in_threads => 8) do |_label, _path, width, url, filename, selector, before_start, global_before_capture, path_before_capture|
       begin
-        command = construct_command(width, url, filename, selector, global_before_capture, path_before_capture)
+        command = construct_command(width, url, filename, selector, before_start, global_before_capture, path_before_capture)
         attempt_image_capture(command, filename)
       rescue => e
         logger.error e
@@ -84,13 +84,14 @@ class Wraith::SaveImages
     end
   end
 
-  def construct_command(width, url, file_name, selector, global_before_capture, path_before_capture)
+  def construct_command(width, url, file_name, selector, before_start, global_before_capture, path_before_capture)
     width    = prepare_widths_for_cli(width)
     selector = selector.gsub '#', '\#' # make sure id selectors aren't escaped in the CLI
+    before_start = convert_to_absolute before_start
     global_before_capture = convert_to_absolute global_before_capture
     path_before_capture   = convert_to_absolute path_before_capture
 
-    command_to_run = "#{meta.engine} #{wraith.phantomjs_options} '#{wraith.snap_file}' '#{url}' '#{width}' '#{file_name}' '#{selector}' '#{global_before_capture}' '#{path_before_capture}'"
+    command_to_run = "#{wraith.binary_path} #{wraith.phantomjs_options} '#{wraith.snap_file}' '#{url}' '#{width}' '#{file_name}' '#{selector}' '#{before_start}' '#{global_before_capture}' '#{path_before_capture}'"
     logger.debug command_to_run
     command_to_run
   end
